@@ -1,0 +1,18 @@
+#' Replication dataset from Del Ponte (2020)
+#'
+#' Ponte, Alessandro Del.
+#' "The influence of foreign elite rhetoric:
+#' National identity, emotions, and attitudes toward austerity."
+#' European Union Politics 22.1 (2021): 155-178.
+#'
+#' A dataset containing the results of an online survey
+#' experiment conducted on Italian respondents.
+#'
+#' @format A data frame with 707 rows and 53 variables:
+#' \describe{
+#'   \item{eudic}{Willingness to allocate money to the EU versus Italy in a dictator game, rescaled 0-1}
+#'   \item{eudic_bin}{Binary recoding with 0.5 threshold}
+#'   ...
+#' }
+#' @source \url{https://journals.sagepub.com/doi/suppl/10.1177/1465116520966653}
+"delponte"

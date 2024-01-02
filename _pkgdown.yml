@@ -1,0 +1,13 @@
+url: https://mattblackwell.github.io/prepost-pkg/
+template:
+  bootstrap: 5
+authors:
+  Matthew Blackwell:
+    href: "https://www.mattblackwell.org/"
+  Jacob Brown:
+    href: "https://jacobrbrown.com/"
+  Sophie Hill:
+    href: "https://www.sophie-e-hill.com/"
+  footer:
+    roles: [aut]
+    text: "Developed by"

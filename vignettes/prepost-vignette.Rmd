@@ -1,0 +1,238 @@
+---
+title: "Overview"
+author: ""
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  comment = "#>",
+  fig.width=7, 
+  fig.height=4
+)
+```
+
+## Introduction
+
+Researchers are often interested in conditional average treatment effects (CATEs): that is, an average treatment effect *conditional* on the value of a moderator variable. In the context of survey design, researchers face a trade-off regarding whether to measure the relevant moderator variable before or after the treatment. Measuring the moderator *before* treatment can create priming bias, where respondents react differently to the treatment because, for example, the measurement of the moderator has primed a certain identity. Measuring the moderator *after* treatment can lead to post-treatment bias, where the value of the moderator variable is affected by the treatment.
+
+For convenience, we use the following terms to distinguish between different survey designs:
+
+-   **pre-test design**: moderator is measured before the treatment
+
+-   **post-test design**: moderator is measured after the treatment
+
+-   **random placement design**: whether the moderator is measured before or after treatment is randomized
+
+The `prepost` package provides functions to help researchers examine the robustness of results under the **post-test** or **random placement** designs, including nonparametric bounds for the interaction between the treatment and moderator, sensitivity analyses, and a Bayesian parametric model to incorporate covariates.
+
+## Data
+
+To illustrate, we use data from a survey experiment by Del Ponte (2020) that uses a **post-test** design. In the experiment, the author investigates how Italian citizens respond to a hypothetical newspaper vignette describing a speech by German Chancellor Angela Merkel. The content of the speech was randomized in a 2 (praising or blaming Italy) x 2 (symbolic or economic theme) design. For simplicity, here we focus on the first contrast. The primary outcome is the respondent's self-reported anger in response to the article. One important moderator in this study is the strength of the respondent's Italian national identity, which was measured after the treatment. To simplify, we binarize both the outcome and the moderator variables by splitting them at the sample medians.
+
++-----------+--------------------------------------------------------------------------------------------------------+---------------------------------------------+
+| Variable  | Original                                                                                               | Recoded                                     |
++===========+========================================================================================================+=============================================+
+| Treatment | Content of hypothetical speech by Merkel: 2 (blames or praises Italy) x 2 (symbolic or economic theme) | `t` = 1 for praise, 0 for blame             |
++-----------+--------------------------------------------------------------------------------------------------------+---------------------------------------------+
+| Moderator | Strength of Italian national identity, scale of 4 items each coded 0-3 (`itaid)`                       | `d` = 1 for above median value; 0 otherwise |
++-----------+--------------------------------------------------------------------------------------------------------+---------------------------------------------+
+| Outcome   | Self-reported anger after reading the article, scale of 2 items each coded 0-3 (`angscale`)            | `y` = 1 for above median value; 0 otherwise |
++-----------+--------------------------------------------------------------------------------------------------------+---------------------------------------------+
+
+```{r include = FALSE}
+library(devtools)
+install_local("/Users/sophiehill/Google-Drive/Harvard/Blackwell-project/prepost-pkg/", force = TRUE)
+```
+
+```{r message = FALSE, warning = FALSE}
+library(tidyverse, warn.conflicts = FALSE)
+library(broom)
+library(lmtest)
+library(sandwich)
+library(prepost)
+
+set.seed(02134)
+theme_set(theme_classic())
+
+
+data(delponte)
+
+delponte %>% select(t, d, y) %>% sample_n(5)
+```
+
+The author finds that the speech praising rather than blaming Italy reduces anger more among respondents with a strong national identity. To replicate this result, we can use OLS regression with robust standard errors, where the model contains the interaction of the treatment, `t`, and the moderator, `d`:
+
+```{r}
+delponte %>% 
+  lm(y ~ t*d, data = .) %>% 
+  coeftest(vcov = vcovHC)
+```
+
+However, this model does not account for the possibility of **post-treatment bias**. What if the respondents' strength of Italian national identity was affected by reading about the speech praising versus blaming Italy?
+
+We can of course look at the average treatment effect on the moderator variable itself:
+
+```{r}
+delponte %>% 
+  lm(d ~ t, data = .) %>% 
+  coeftest(vcov = vcovHC)
+```
+
+However, a null result on such a test does not rule out the possibility of post-treatment bias, since individual-level effects may "cancel out" in the aggregate. Indeed, when exclude respondents with low levels of political sophistication (defined as either being in the bottom quartile on the political knowledge scale or not being regular readers of the newspaper blog where the experiment was advertised), we do observe a statistically significant treatment effect on the moderator. Reading about a speech where Merkel praises Italy (versus blames Italy) causes respondents to report higher levels of Italian national identity.
+
+```{r}
+delponte_subset <- delponte %>%
+  filter(sopscale >= quantile(sopscale, 0.25),
+         Corriere == 1)
+
+delponte_subset %>%
+  lm(d ~ t, data = .) %>%
+  coeftest(vcov = vcovHC)
+```
+
+## Nonparametric bounds
+
+To implement the sharp bounds derived in [CITE OUR PAPER], we can use the `post_bounds()` function, which returns a list containing the values of the bounds for the interaction between the treatment and the moderator, as well as the external confidence intervals.
+
+```{r}
+bounds_1 <- post_bounds(formula = y ~ t,
+                        data = delponte_subset,
+                        moderator = ~ d)
+
+print(bounds_1)
+```
+
+By default, the bounds are calculated assuming only randomization of treatment. However, making additional assumptions can tighten the bounds considerably. The function allows the user to toggle either of the following assumptions:
+
+-   `moderator_mono`: Monotonicity of the post-test effect, i.e., measuring the moderator after treatment moves that moderator in one direction. Defaults to `NULL`.
+
+-   `stable_mod`: Stable moderator under control, i.e., the moderator under the control condition is not affected by the timing of treatment. Defaults to `FALSE`.
+
+```{r}
+bounds_2 <- post_bounds(
+  formula = y ~ t,
+  data = delponte_subset,
+  moderator = ~ d,
+  moderator_mono = 1,
+  stable_mod = TRUE
+)
+
+print(bounds_2)
+```
+
+We can also incorporate covariates using formula syntax. (Note: in order to incorporate covariates, the argument `stable_mod` must be set to `TRUE`.)
+
+```{r}
+bounds_3 <- post_bounds(
+  formula = y ~ t,
+  data = delponte_subset,
+  covariates = ~ x1,
+  moderator = ~ d,
+  moderator_mono = 1,
+  stable_mod = TRUE
+)
+
+print(bounds_3)
+```
+
+## Sensitivity analysis
+
+In [CITE OUR PAPER], we propose a sensitivity analysis, based on the following constraint:
+
+$$
+\Pr(S_i \notin \{111, 000\}) \leq \gamma
+$$
+
+The sensitivity parameter, $\gamma$, bounds the proportion of respondents whose moderator value changes between the pre-test and post-test values. We can observe how the nonparametric bounds on the interaction effect change as we vary $\gamma$.
+
+```{r}
+sens_1 <- post_sens(
+  formula = y ~ t,
+  data = delponte_subset,
+  moderator = ~ d,
+  g_by = 0.1
+)
+
+print(sens_1)
+
+sens_1 %>%
+  ggplot(aes(x = gamma)) +
+  geom_line(aes(y = lower)) +
+  geom_line(aes(y = upper)) +
+  geom_hline(yintercept = 0, 
+             lty = "dotted") +
+  geom_ribbon(aes(ymin = ci_lower,
+                  ymax = ci_upper),
+              alpha = 0.2) +
+  labs(x = expression("Sensitivity parameter" ~~ (gamma)),
+       y = "Interaction effect",
+       title = "Sensitivity analysis")
+```
+
+## Bayesian parametric model
+
+Incorporating covariates into the nonparametric bounds is possible, but a Bayesian parametric model gives more flexibility.
+
+```{r}
+gibbs_1 <- prepost_gibbs_nocovar(
+  formula = y ~ t,
+  data = delponte_subset,
+  prepost = ~1,
+  moderator = ~ d)
+
+str(gibbs_1)
+```
+
+```{r}
+gibbs_2 <- prepost_gibbs_nocovar(
+  formula = y ~ t,
+  data = delponte_subset,
+  prepost = ~1,
+  moderator = ~d)
+
+str(gibbs_2)
+```
+
+We can compare the estimate and credible interval of the quantity of interest (the interaction between the treatment and the moderator) with and without covariates. We provide two different estimates of this quantity: `delta.1` is the in-sample estimate and `delta.2` is the population estimate.
+
+```{r}
+delta_list <- list(gibbs_1$delta.1,
+                   gibbs_1$delta.2,
+                   gibbs_2$delta.1,
+                   gibbs_2$delta.2)
+
+get_ci <- function(x){
+  tribble(~mean, ~lowerCI, ~upperCI,
+          mean(x), quantile(x, 0.025), quantile(x, 0.975))
+}
+
+lapply(delta_list, get_ci) %>%
+  bind_rows() %>%
+  cbind(model = c(
+    "In-sample delta, w/o covars",
+    "Population delta, w/o covars",
+    "In-sample delta, with covars",
+    "Population delta, with covars"
+  ),
+  .) %>%
+  ggplot(aes(
+    x = mean,
+    y = model,
+    xmin = lowerCI,
+    xmax = upperCI
+  )) +
+  geom_point() +
+  geom_errorbar(width = 0.2) +
+  geom_vline(xintercept = 0, lty = "dotted") +
+  labs(x = "", 
+       y = "", 
+       title = "Bayesian credible intervals")
+```
