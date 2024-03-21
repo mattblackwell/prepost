@@ -25,9 +25,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    gtools
-    BayesLogit
-    lpSolve
+    gtools,
+    BayesLogit,
+    lpSolve,
     progress
 Suggests: 
     testthat (>= 3.0.0)
