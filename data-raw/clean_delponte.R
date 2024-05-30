@@ -64,6 +64,14 @@ dat <-
     eudic_bin = ifelse(eudic > 0.5, 1, 0)
     )
 
+
+dat <- dat |>
+  select(
+    angry_bin, itaid_bin, t_commonality, north, satisf, sopscale, Corriere
+  ) |>
+  na.omit()
+
+
 # save
 write_csv(dat,
           "./data-raw/dp_replication_data_cleaned.csv")

@@ -9,7 +9,7 @@ post_sens(
   data,
   moderator,
   g_by,
-  g_max,
+  g_max = 1,
   q_by,
   sims = 1000,
   conf_level = 0.95,
@@ -30,6 +30,8 @@ is the (unquoted) name of the  moderator variable for the CATE.}
 \item{g_by}{Numeric indicating the grid spacing for the
 \eqn{\gamma} parameter that places an upper bound on the proportion
 of units whose moderator is affected by treatment.}
+
+\item{g_max}{Numeric indicating the maximum value of the \eqn{\gamma} parameter.}
 
 \item{q_by}{Numeric indicating the grid spacing for the mean of the
 moderator under a pre-test measurement.}
@@ -62,5 +64,9 @@ A list object containing sensitivity output.
 Run sensitivity analysis on post-measurement design
 }
 \examples{
-post_sens(formula = y ~ t, data = delponte_subset, moderator = ~ d, g_by = 0.1)
+post_sens(formula = angry_bin ~ t_commonality,
+  data = delponte,
+  moderator = ~ itaid_bin,
+  g_by = 0.1
+)
 }

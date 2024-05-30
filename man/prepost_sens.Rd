@@ -28,6 +28,8 @@ prepost_sens(
 \item{moderator}{A one-sided formuala with syntax \code{~ d}, where \code{d}
 is the (unquoted) name of the  moderator variable for the CATE.}
 
+\item{prepost}{A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment.}
+
 \item{g_by}{Numeric indicating the grid spacing for the
 \eqn{\gamma} parameter that places an upper bound on the proportion
 of units whose moderator is affected by treatment.}

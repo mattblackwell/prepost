@@ -1,6 +1,6 @@
 Package: prepost
 Type: Package
-Title: Non-parametric bounds and gibbs sampler for assessing post-treatment bias
+Title: Non-Parametric Bounds and Gibbs Sampler for Assessing Priming and Post-Treatment Bias
 Version: 0.1.0
 Authors@R: 
   c(person(given = "Matthew",
@@ -18,9 +18,9 @@ Authors@R:
            role = c("aut"),
            email = "sophie_hill@g.harvard.edu")
            )
-URL: https://github.com/mattblackwell/prepost-pkg,
-    https://mattblackwell.github.io/prepost-pkg/
-Description: This package contains code and sample data to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in "Priming bias versus post-treatment bias in experimental designs", Blackwell et al. (Forthcoming).
+URL: https://github.com/mattblackwell/prepost,
+    https://mattblackwell.github.io/prepost/
+Description: A set of tools to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in "Priming bias versus post-treatment bias in experimental designs", Blackwell et al. (Forthcoming).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -33,8 +33,14 @@ Suggests:
     testthat (>= 3.0.0),
     devtools,
     knitr,
-    rmarkdown
+    rmarkdown,
+    lmtest,
+    sandwich,
+    dplyr,
+    ggplot2
 Depends: 
     R (>= 2.10)
-RoxygenNote: 7.2.1
+VignetteBuilder: 
+    knitr
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

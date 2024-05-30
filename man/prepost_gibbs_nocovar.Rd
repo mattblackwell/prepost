@@ -12,7 +12,6 @@ prepost_gibbs_nocovar(
   iter = 1000,
   thin = 1,
   burn = 0,
-  offset = 0,
   monotonicity = TRUE,
   stable = TRUE,
   priors,
@@ -20,11 +19,11 @@ prepost_gibbs_nocovar(
 )
 }
 \arguments{
-\item{formula}{A formula with syntax y ~ t, where y is the outcome and t is the treatment.}
+\item{formula}{A formula with syntax \code{y ~ t}, where \code{y} is the name of the  outcome variable and \code{t} is the name of the treatment.}
 
-\item{data}{A dataframe}
+\item{data}{A data frame containin the variables in the formula.}
 
-\item{prepost}{A formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment...}
+\item{prepost}{A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment.}
 
 \item{moderator}{A formuala with syntax ~ d, where d is the moderator variable for the CATE.}
 
@@ -34,15 +33,13 @@ prepost_gibbs_nocovar(
 
 \item{burn}{Numeric, burn in rate for the Gibbs}
 
-\item{offset}{Numeric, ...}
+\item{monotonicity}{A logical signifying whether Gibbs assumes monotonicity.}
 
 \item{stable}{A logical signifying whether Gibbs assumes stability.}
 
 \item{priors}{A list object containing the priors for the Gibbs sampler. Priors include beta.precision, psi.precision, alpha, y.alpha, and y.beta.}
 
-\item{monotonicty}{A logical signifying whether Gibbs assumes monotonicity.}
-
-\item{saturated}{A logical signifying...}
+\item{predictive}{A logical indicator for whether to return prior predictive draws (\code{TRUE}) or posterior draws (\code{FALSE}, default).}
 }
 \value{
 A list object containing Gibbs posterior quantities of interest and parameters.

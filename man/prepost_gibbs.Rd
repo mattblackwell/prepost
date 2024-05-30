@@ -45,9 +45,11 @@ save a draw.}
 \item{burn}{Integer indicating how many iterations should be
 performed before saving draws in the Gibbs sampler.}
 
-\item{offset}{Numeric, ...}
+\item{offset}{A numeric value indicating the center of the prior distribution for the covariate coefficients.}
 
-\item{stable}{A logical signifying whether Gibbs assumes that the
+\item{monotonicity}{A logical signifying whether the model assumes monotonicity.}
+
+\item{stable}{A logical signifying whether the model assumes that the
 the pre vs post indicator does not affect the moderator under the
 control condition for treatment.}
 
@@ -57,8 +59,6 @@ the covariates are allowed to vary by the principal strata.}
 \item{priors}{A list object containing the priors for the Gibbs
 sampler. Priors include beta.precision, psi.precision, alpha,
 y.alpha, and y.beta.}
-
-\item{monotonicty}{A logical signifying whether Gibbs assumes monotonicity.}
 }
 \value{
 A list object containing Gibbs posterior quantities of interest and parameters.

@@ -47,14 +47,10 @@ To illustrate, we use data from a survey experiment by Del Ponte (2020) that use
 | Outcome   | Self-reported anger after reading the article, scale of 2 items each coded 0-3 (`angscale`)            | `y` = 1 for above median value; 0 otherwise |
 +-----------+--------------------------------------------------------------------------------------------------------+---------------------------------------------+
 
-```{r include = FALSE}
-library(devtools)
-install_local("/Users/sophiehill/Google-Drive/Harvard/Blackwell-project/prepost-pkg/", force = TRUE)
-```
 
 ```{r message = FALSE, warning = FALSE}
-library(tidyverse, warn.conflicts = FALSE)
-library(broom)
+library(dplyr)
+library(ggplot2)
 library(lmtest)
 library(sandwich)
 library(prepost)
@@ -65,14 +61,13 @@ theme_set(theme_classic())
 
 data(delponte)
 
-delponte %>% select(t, d, y) %>% sample_n(5)
+delponte |> select(t_commonality, itaid_bin, angry_bin) |> sample_n(5)
 ```
 
 The author finds that the speech praising rather than blaming Italy reduces anger more among respondents with a strong national identity. To replicate this result, we can use OLS regression with robust standard errors, where the model contains the interaction of the treatment, `t`, and the moderator, `d`:
 
 ```{r}
-delponte %>% 
-  lm(y ~ t*d, data = .) %>% 
+lm(angry_bin ~ t_commonality * itaid_bin, data = delponte) |> 
   coeftest(vcov = vcovHC)
 ```
 
@@ -80,21 +75,19 @@ However, this model does not account for the possibility of **post-treatment bia
 
 We can of course look at the average treatment effect on the moderator variable itself:
 
-```{r}
-delponte %>% 
-  lm(d ~ t, data = .) %>% 
+```{r} 
+lm(itaid_bin ~ t_commonality, data = delponte) |> 
   coeftest(vcov = vcovHC)
 ```
 
 However, a null result on such a test does not rule out the possibility of post-treatment bias, since individual-level effects may "cancel out" in the aggregate. Indeed, when exclude respondents with low levels of political sophistication (defined as either being in the bottom quartile on the political knowledge scale or not being regular readers of the newspaper blog where the experiment was advertised), we do observe a statistically significant treatment effect on the moderator. Reading about a speech where Merkel praises Italy (versus blames Italy) causes respondents to report higher levels of Italian national identity.
 
 ```{r}
-delponte_subset <- delponte %>%
-  filter(sopscale >= quantile(sopscale, 0.25),
+delponte_subset <- delponte |>
+  filter(sopscale >= quantile(sopscale, 0.25, na.rm = TRUE),
          Corriere == 1)
 
-delponte_subset %>%
-  lm(d ~ t, data = .) %>%
+lm(itaid_bin ~ t_commonality, data = delponte_subset) |>
   coeftest(vcov = vcovHC)
 ```
 
@@ -103,9 +96,9 @@ delponte_subset %>%
 To implement the sharp bounds derived in [CITE OUR PAPER], we can use the `post_bounds()` function, which returns a list containing the values of the bounds for the interaction between the treatment and the moderator, as well as the external confidence intervals.
 
 ```{r}
-bounds_1 <- post_bounds(formula = y ~ t,
+bounds_1 <- post_bounds(formula = angry_bin ~ t_commonality,
                         data = delponte_subset,
-                        moderator = ~ d)
+                        moderator = ~ itaid_bin)
 
 print(bounds_1)
 ```
@@ -118,9 +111,9 @@ By default, the bounds are calculated assuming only randomization of treatment. 
 
 ```{r}
 bounds_2 <- post_bounds(
-  formula = y ~ t,
+  formula = angry_bin ~ t_commonality,
   data = delponte_subset,
-  moderator = ~ d,
+  moderator = ~ itaid_bin,
   moderator_mono = 1,
   stable_mod = TRUE
 )
@@ -130,75 +123,29 @@ print(bounds_2)
 
 We can also incorporate covariates using formula syntax. (Note: in order to incorporate covariates, the argument `stable_mod` must be set to `TRUE`.)
 
-```{r}
-bounds_3 <- post_bounds(
-  formula = y ~ t,
-  data = delponte_subset,
-  covariates = ~ x1,
-  moderator = ~ d,
-  moderator_mono = 1,
-  stable_mod = TRUE
-)
-
-print(bounds_3)
-```
-
-## Sensitivity analysis
-
-In [CITE OUR PAPER], we propose a sensitivity analysis, based on the following constraint:
-
-$$
-\Pr(S_i \notin \{111, 000\}) \leq \gamma
-$$
-
-The sensitivity parameter, $\gamma$, bounds the proportion of respondents whose moderator value changes between the pre-test and post-test values. We can observe how the nonparametric bounds on the interaction effect change as we vary $\gamma$.
-
-```{r}
-sens_1 <- post_sens(
-  formula = y ~ t,
-  data = delponte_subset,
-  moderator = ~ d,
-  g_by = 0.1
-)
-
-print(sens_1)
-
-sens_1 %>%
-  ggplot(aes(x = gamma)) +
-  geom_line(aes(y = lower)) +
-  geom_line(aes(y = upper)) +
-  geom_hline(yintercept = 0, 
-             lty = "dotted") +
-  geom_ribbon(aes(ymin = ci_lower,
-                  ymax = ci_upper),
-              alpha = 0.2) +
-  labs(x = expression("Sensitivity parameter" ~~ (gamma)),
-       y = "Interaction effect",
-       title = "Sensitivity analysis")
-```
-
 ## Bayesian parametric model
 
 Incorporating covariates into the nonparametric bounds is possible, but a Bayesian parametric model gives more flexibility.
 
 ```{r}
 gibbs_1 <- prepost_gibbs_nocovar(
-  formula = y ~ t,
+  formula = angry_bin ~ t_commonality,
   data = delponte_subset,
   prepost = ~1,
-  moderator = ~ d)
-
-str(gibbs_1)
+  moderator = ~ itaid_bin,
+  iter = 250
+)
 ```
 
 ```{r}
-gibbs_2 <- prepost_gibbs_nocovar(
-  formula = y ~ t,
+gibbs_2 <- prepost_gibbs(
+  formula = angry_bin ~ t_commonality,
   data = delponte_subset,
   prepost = ~1,
-  moderator = ~d)
-
-str(gibbs_2)
+  moderator = ~ itaid_bin,
+  covariates = ~ north + satisf,
+  iter = 250
+)
 ```
 
 We can compare the estimate and credible interval of the quantity of interest (the interaction between the treatment and the moderator) with and without covariates. We provide two different estimates of this quantity: `delta.1` is the in-sample estimate and `delta.2` is the population estimate.
@@ -214,15 +161,15 @@ get_ci <- function(x){
           mean(x), quantile(x, 0.025), quantile(x, 0.975))
 }
 
-lapply(delta_list, get_ci) %>%
-  bind_rows() %>%
-  cbind(model = c(
+lapply(delta_list, get_ci) |>
+  bind_rows() |>
+  mutate(model = c(
     "In-sample delta, w/o covars",
     "Population delta, w/o covars",
     "In-sample delta, with covars",
     "Population delta, with covars"
-  ),
-  .) %>%
+  )) |>
+  as_tibble() |>
   ggplot(aes(
     x = mean,
     y = model,

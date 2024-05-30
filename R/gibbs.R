@@ -17,9 +17,9 @@
 #' save a draw.
 #' @param burn Integer indicating how many iterations should be
 #' performed before saving draws in the Gibbs sampler.
-#' @param offset Numeric, ...
-#' @param monotonicty A logical signifying whether Gibbs assumes monotonicity.
-#' @param stable A logical signifying whether Gibbs assumes that the
+#' @param offset A numeric value indicating the center of the prior distribution for the covariate coefficients. 
+#' @param monotonicity A logical signifying whether the model assumes monotonicity.
+#' @param stable A logical signifying whether the model assumes that the
 #' the pre vs post indicator does not affect the moderator under the
 #' control condition for treatment.
 #' @param saturated A logical indicating whether the coefficients on
@@ -70,7 +70,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
 
   }
 
-  if (prepost == ~1){
+  if (prepost == ~1) {
     data$z <- rep(1, length(nrow(data)))
     prepost = ~z
   }
@@ -113,11 +113,11 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
   if (missing(covariates)) {
     stop("no covariates specified. Use gibbs_nocovar() instead.")
   }
-
+  
   covars <- model.matrix(covariates, mf)
   tz.mat <- cbind(tr, z, tr * z)
   colnames(tz.mat) <- c(tr.name, z.name, paste0(tr.name, ":", z.name))
-  N <- nrow(data)
+  N <- nrow(mf)
   # save possible strata
   possible.strata <- c("s111", "s110", "s100", "s101", "s011", "s010",
                        "s001", "s000")
@@ -202,7 +202,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
   out$delta.2 <- rep(NA, n.samp)
 
   ## g = conditional outcome distribution
-  g <- matrix(NA, nrow = nrow(data), ncol = length(possible.strata))
+  g <- matrix(NA, nrow = N, ncol = length(possible.strata))
   colnames(g) <- possible.strata
   g <- as.data.frame(g)
 
@@ -438,19 +438,17 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
 
 #' Run Gibbs sampler without covariates
 #'
-#' @param formula A formula with syntax y ~ t, where y is the outcome and t is the treatment.
-#' @param data A dataframe
-#' @param prepost A formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment...
+#' @param formula A formula with syntax `y ~ t`, where `y` is the name of the  outcome variable and `t` is the name of the treatment.
+#' @param data A data frame containin the variables in the formula.
+#' @param prepost A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment. 
 #' @param moderator A formuala with syntax ~ d, where d is the moderator variable for the CATE.
 #' @param iter Numeric, number of iterations for the Gibbs
 #' @param thin Numeric, thinning parameter for the Gibbs
 #' @param burn Numeric, burn in rate for the Gibbs
-#' @param offset Numeric, ...
-#' @param monotonicty A logical signifying whether Gibbs assumes monotonicity.
+#' @param monotonicity A logical signifying whether Gibbs assumes monotonicity.
 #' @param stable A logical signifying whether Gibbs assumes stability.
-#' @param saturated A logical signifying...
 #' @param priors A list object containing the priors for the Gibbs sampler. Priors include beta.precision, psi.precision, alpha, y.alpha, and y.beta.
-#'
+#' @param predictive A logical indicator for whether to return prior predictive draws (`TRUE`) or posterior draws (`FALSE`, default).
 #'
 #' @return A list object containing Gibbs posterior quantities of interest and parameters.
 
@@ -461,10 +459,11 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
 #' @importFrom progress progress_bar
 #' @importFrom gtools rdirichlet
 #' @importFrom BayesLogit rpg.devroye
+#' @importFrom stats as.formula model.frame model.matrix model.response rnorm plogis rbinom rbeta dbeta ave runif
 #' @export
 
 prepost_gibbs_nocovar <- function(formula, data, prepost, moderator,
-                                  iter = 1000, thin = 1, burn = 0, offset = 0,
+                                  iter = 1000, thin = 1, burn = 0,
                                   monotonicity = TRUE, stable = TRUE, priors,
                                   predictive = FALSE) {
 
@@ -524,7 +523,7 @@ prepost_gibbs_nocovar <- function(formula, data, prepost, moderator,
   tz.mat <- cbind(tr, z, tr * z)
   colnames(tz.mat) <- c(tr.name, z.name, paste0(tr.name, ":", z.name))
 
-  N <- nrow(data)
+  N <- nrow(mf)
   # save possible strata
   possible.strata <- c("s111", "s110", "s100", "s101", "s011", "s010",
                        "s001", "s000")
@@ -604,7 +603,7 @@ prepost_gibbs_nocovar <- function(formula, data, prepost, moderator,
   out$logpost <- rep(NA, n.samp)
 
   ## g = conditional outcome distribution
-  g <- matrix(NA, nrow = nrow(data), ncol = length(possible.strata))
+  g <- matrix(NA, nrow = N, ncol = length(possible.strata))
   colnames(g) <- possible.strata
   g <- as.data.frame(g)
 

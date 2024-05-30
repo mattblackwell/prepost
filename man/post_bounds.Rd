@@ -58,5 +58,9 @@ Run post-treatment bounds.
 }
 \examples{
 data(delponte)
-post_bounds(formula = y ~ t, data = delponte, moderator = ~ d)
+post_bounds(
+  formula = angry_bin ~ t_commonality,
+   data = delponte,
+  moderator = ~ itaid_bin
+)
 }

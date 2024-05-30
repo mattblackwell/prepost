@@ -115,7 +115,12 @@ compute_strata_probs <- function(Y, D, T, Z) {
 #'
 #' @examples
 #' data(delponte)
-#' post_bounds(formula = y ~ t, data = delponte, moderator = ~ d)
+#' post_bounds(
+#'   formula = angry_bin ~ t_commonality,
+#'    data = delponte,
+#'   moderator = ~ itaid_bin
+#' )
+#' @importFrom stats pnorm sd optimize
 #' @export
 post_bounds <- function(formula, data, moderator, sims = 1000,
                         conf_level = 0.95,
@@ -186,8 +191,8 @@ post_bounds <- function(formula, data, moderator, sims = 1000,
 
   if (nondiff) {
     nd_out <- post_bounds_nondiff(p, q)
-    out$lower[j] <- nd_out$lower
-    out$upper[j] <- nd_out$upper
+    out$lower <- nd_out$lower
+    out$upper <- nd_out$upper
   }
 
   boot_lo <- rep(NA, times = sims)
@@ -378,14 +383,19 @@ post_factory <- function(p, q, moderator_mono, stable_mod) {
 #' of units whose moderator is affected by treatment.
 #' @param q_by Numeric indicating the grid spacing for the mean of the
 #' moderator under a pre-test measurement.
+#' @param g_max Numeric indicating the maximum value of the \eqn{\gamma} parameter. 
 #'
 #' @return A list object containing sensitivity output.
 #'
 #' @examples
-#' post_sens(formula = y ~ t, data = delponte_subset, moderator = ~ d, g_by = 0.1)
+#' post_sens(formula = angry_bin ~ t_commonality,
+#'   data = delponte,
+#'   moderator = ~ itaid_bin,
+#'   g_by = 0.1
+#' )
 #' @export
 post_sens <- function(formula, data,  moderator,
-                      g_by, g_max, q_by, sims = 1000, conf_level = 0.95,
+                      g_by, g_max = 1, q_by, sims = 1000, conf_level = 0.95,
                       moderator_mono = NULL, stable_mod = FALSE,
                       progress = TRUE) {
 
@@ -599,6 +609,7 @@ post_bounds_nondiff <- function(p, q, q_by) {
 #' Run Prepost bounds
 #'
 #' @inheritParams post_bounds
+#' @param prepost A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment. 
 #' @param sims An integer specifying the number of simulations for the sensitivity analysis.
 #' @param conf_level A numeric specifying level for the confidence intervals.
 #' @param outcome_mono A integer or vector of length 2 indicating
@@ -690,7 +701,7 @@ prepost_bounds <- function(formula, data,  moderator,  prepost,
       good_draw <- !any(is.na(c(ostar$P, ostar$V)))
       count <- count + 1L
       if (count == 100L) {
-        error("100 bootstrap resamples with empty cells.")
+        stop("100 bootstrap resamples with empty cells.")
       }
     }
     if (count > 1) empty_count <- empty_count + 1
@@ -729,6 +740,7 @@ prepost_bounds <- function(formula, data,  moderator,  prepost,
 #' Run sensitivity analysis for the randomized moderator placement design
 #'
 #' @inheritParams post_sens
+#' @param prepost A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment. 
 #' @param t_by Numeric indicating the grid spacing for the
 #' \eqn{\theta} parameter that restricts what proportion of units have
 #' their outcomes affected by the pre vs post-measurement of the
@@ -1136,4 +1148,153 @@ pre_bounds_core <- function(V, outcome_mono = NULL, theta = 1) {
   lower <- ifelse(l_res$status == 0, l_res$objval, NA)
   upper <- ifelse(u_res$status == 0, u_res$objval, NA)
   return(list(lower = lower, upper = upper))
+}
+
+
+## PRE BOUNDS ----
+
+#' Run pre-treatment bounds.
+#'
+#' @inheritParams prepost_gibbs
+#' @param conf_level A numeric indicating the confidence level for the bootstrap
+#'   confidence intervals.
+#' @param priming_mono A integer indicating the direction of the priming
+#'   monotonicity assumption. The default value `1` indicates that asking the
+#'   moderator question in the pre-test moves outcomes in a positive direction
+#'   for all units. The value `-1` indicates it moves outcomes in a negative
+#'   direction for all units.
+#'
+#' @return A list object containing bounds.
+#'
+#' @examples
+#' data(delponte)
+#' pre_bounds(
+#'   formula = angry_bin ~ t_commonality,
+#'    data = delponte,
+#'   moderator = ~ itaid_bin
+#' )
+#' @importFrom stats reformulate
+#' @export
+pre_bounds <- function(formula, data, moderator,
+                        conf_level = 0.95,
+                        priming_mono = 1L) {
+
+
+  # Extract, outcome, moderator, treatment variables from formulas
+
+  outcome = all.vars(formula)[1]
+  treat = all.vars(formula)[2]
+  moderator = all.vars(moderator)[1]
+
+  form <- reformulate(c(treat, moderator), response = outcome)
+  mf <- model.frame(form, data)
+
+  Y <- as.numeric(unlist(mf[, outcome]))
+  D <- as.numeric(unlist(mf[, moderator]))
+  T <- as.numeric(unlist(mf[, treat]))
+  Z <- rep(0, length(Y))
+
+
+  pre_est <- mean(Y[T == 1 & D == 1]) - mean(Y[T == 0 & D == 1]) -
+    mean(Y[T == 1 & D == 0]) + mean(Y[T == 0 & D == 0])
+
+  out <- list()
+  p <- tapply(Y, interaction(T, Z, D, sep = ""), mean)
+  q <- tapply(rep(1, length(Y)), interaction(T, Z, D, sep = ""), sum)
+  s <- sqrt(p * (1 - p) / q)
+
+  if (priming_mono == 1) {
+    s_upper <- s["101"] + s["000"]
+    s_lower <- s["100"] + s["001"]
+    out$lower <- -(p["100"] + p["001"])
+    out$upper <- p["101"] + p["000"]
+  } else if (priming_mono == -1) {
+    s_upper <- s["001"] + s["100"]
+    s_lower <- s["101"] + s["000"]
+    out$lower <- p["101"] + p["000"] - 2
+    out$upper <- 2 - p["001"] - p["100"]
+  }
+
+  names(out$lower) <- ""
+  names(out$upper) <- ""
+
+  im <- imb.man.ci(out$lower, out$upper, s_lower, s_upper,
+                        N = length(Y), alpha = conf_level)
+  out$ci_lower <- unname(im[1])
+  out$ci_upper <- unname(im[2])
+
+  out$pre_est <- pre_est
+  return(out)
+}
+
+
+
+#' Run sensitivity analysis on pre-test design
+#'
+#' @inheritParams pre_bounds
+#' @param t_by Numeric indicating the grid spacing for the
+#' \eqn{\theta} parameter that restricts what proportion of units have
+#' their outcomes affected by the pre vs post-measurement of the
+#' moderator.
+#'
+#' @return A list object containing sensitivity output.
+#'
+#' @examples
+#' pre_sens(formula = angry_bin ~ t_commonality,
+#'   data = delponte,
+#'   moderator = ~ itaid_bin,
+#'   t_by = 0.1
+#' )
+#' @export
+pre_sens <- function(formula, data,  moderator,
+                      t_by = 0.05, conf_level = 0.95,
+                      priming_mono = 1L) {
+
+  
+
+
+  outcome = all.vars(formula)[1]
+  treat = all.vars(formula)[2]
+  moderator = all.vars(moderator)[1]
+
+  form <- reformulate(c(treat, moderator), response = outcome)
+  mf <- model.frame(form, data)
+
+  Y <- as.numeric(unlist(mf[, outcome]))
+  D <- as.numeric(unlist(mf[, moderator]))
+  T <- as.numeric(unlist(mf[, treat]))
+  Z <- rep(0, length(Y))
+
+
+  p <- tapply(Y, interaction(T, Z, D, sep = ""), mean)
+  q <- tapply(rep(1, length(Y)), interaction(T, Z, D, sep = ""), sum)
+  s <- sqrt(p * (1 - p) / q)  
+  
+  pre_est <- p["101"] - p["001"] - p["100"] + p["000"]  
+  pre_se <- s["101"] + s["001"] + s["100"] + s["000"]
+  
+  if (priming_mono == 1) {
+    t_max <- max(p["101"], p["100"], p["001"], p["000"])
+  } else {
+    t_max <- 1 - min(p["101"], p["100"], p["001"], p["000"])
+  }
+  thetas <- seq(0, t_max, by = t_by)
+
+  out <- list()
+  out$lower <- pre_est - 2 * thetas
+  out$upper <- pre_est + 2 * thetas
+
+  
+  out$ci_lower <- rep(NA, length(thetas))
+  out$ci_upper <- rep(NA, length(thetas))
+
+  for (k in seq_along(thetas)) {
+    im <- imb.man.ci(out$lower[k], out$upper[k], pre_se, pre_se,
+                     N = length(Y), alpha = conf_level)
+    out$ci_lower[k] <- unname(im[1])
+    out$ci_upper[k] <- unname(im[2])
+
+  }
+  return(out)
+  
 }
