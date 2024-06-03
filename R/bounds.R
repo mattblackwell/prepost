@@ -1281,6 +1281,7 @@ pre_sens <- function(formula, data,  moderator,
   thetas <- seq(0, t_max, by = t_by)
 
   out <- list()
+  out$thetas <- thetas
   out$lower <- pre_est - 2 * thetas
   out$upper <- pre_est + 2 * thetas
 
