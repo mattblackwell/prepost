@@ -1201,16 +1201,16 @@ pre_bounds <- function(formula, data, moderator,
   out <- list()
   p <- tapply(Y, interaction(T, Z, D, sep = ""), mean)
   q <- tapply(rep(1, length(Y)), interaction(T, Z, D, sep = ""), sum)
-  s <- sqrt(p * (1 - p) / q)
+  s2 <- p * (1 - p) / q
 
   if (priming_mono == 1) {
-    s_upper <- s["101"] + s["000"]
-    s_lower <- s["100"] + s["001"]
+    s_upper <- sqrt(s2["101"] + s2["000"])
+    s_lower <- sqrt(s2["100"] + s2["001"])
     out$lower <- -(p["100"] + p["001"])
     out$upper <- p["101"] + p["000"]
   } else if (priming_mono == -1) {
-    s_upper <- s["001"] + s["100"]
-    s_lower <- s["101"] + s["000"]
+    s_upper <- sqrt(s2["001"] + s2["100"])
+    s_lower <- sqrt(s2["101"] + s2["000"])
     out$lower <- p["101"] + p["000"] - 2
     out$upper <- 2 - p["001"] - p["100"]
   }
@@ -1268,10 +1268,10 @@ pre_sens <- function(formula, data,  moderator,
 
   p <- tapply(Y, interaction(T, Z, D, sep = ""), mean)
   q <- tapply(rep(1, length(Y)), interaction(T, Z, D, sep = ""), sum)
-  s <- sqrt(p * (1 - p) / q)  
+  s2 <- p * (1 - p) / q  
   
   pre_est <- p["101"] - p["001"] - p["100"] + p["000"]  
-  pre_se <- s["101"] + s["001"] + s["100"] + s["000"]
+  pre_se <- sqrt(s2["101"] + s2["001"] + s2["100"] + s2["000"])
   
   if (priming_mono == 1) {
     t_max <- max(p["101"], p["100"], p["001"], p["000"])
