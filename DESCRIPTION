@@ -28,7 +28,8 @@ Imports:
     gtools,
     BayesLogit,
     lpSolve,
-    progress
+    progress,
+    Rglpk
 Suggests: 
     testthat (>= 3.0.0),
     devtools,

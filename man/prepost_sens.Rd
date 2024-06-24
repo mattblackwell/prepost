@@ -10,12 +10,15 @@ prepost_sens(
   moderator,
   prepost,
   g_by,
+  g_at,
   t_by,
+  t_at,
   sims = 1000,
+  stable_mod = FALSE,
   conf_level = 0.95,
   moderator_mono = NULL,
   outcome_mono = NULL,
-  c_se = NULL,
+  tau = 0.25,
   progress = TRUE
 )
 }
@@ -42,6 +45,10 @@ moderator.}
 \item{sims}{An integer indicating the number of simulations for the
 bootstrap confidence intervals for the bounds.}
 
+\item{stable_mod}{A logical value indicating if the bounds should
+assume that the moderator is unaffected by pre-vs-post measurement
+under the control condition.}
+
 \item{conf_level}{A numeric indicating the confidence level for the
 bootstrap confidence intervals.}
 
@@ -61,11 +68,10 @@ vector of length 2 allows the monotonicity assumption to vary by
 treatment status with the first entry being for control and the
 second for treated.}
 
-\item{c_se}{A numeric vector of positive values that allow for the
-bounds to be estimated under a relaxation of \code{c_se[i]} standard
-errors of the population constraints. Bounds are returned for the
-smallest value of \code{c_se} where bounds are feasible. By default,
-this is set to a grid of \code{seq(0, 3, 0.1)}.}
+\item{tau}{A numeric indicating how close the the moment conditions of the
+estimated bounds have to be from the minimum values in the sample. This
+allows us to obtain bounds and confidence intevals even when the
+assumptions are slightly violated due to sampling.}
 
 \item{progress}{A logical indicating if progress bars should be
 displayed. Defaults to TRUE.}

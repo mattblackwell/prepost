@@ -11,10 +11,10 @@ prepost_bounds(
   prepost,
   sims = 1000,
   conf_level = 0.95,
-  moderator_mono = FALSE,
-  outcome_mono = FALSE,
+  moderator_mono = NULL,
+  outcome_mono = NULL,
   stable_mod = FALSE,
-  c_se = NULL,
+  tau = 0.25,
   progress = TRUE
 )
 }
@@ -27,9 +27,11 @@ prepost_bounds(
 \item{moderator}{A one-sided formuala with syntax \code{~ d}, where \code{d}
 is the (unquoted) name of the  moderator variable for the CATE.}
 
-\item{prepost}{A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment.}
+\item{prepost}{A one-sided formula with syntax ~ z, where z is the indicator
+variable for whether the moderator was measured pre- or post-treatment.}
 
-\item{sims}{An integer specifying the number of simulations for the sensitivity analysis.}
+\item{sims}{An integer specifying the number of simulations for the
+sensitivity analysis.}
 
 \item{conf_level}{A numeric specifying level for the confidence intervals.}
 
@@ -41,23 +43,21 @@ vector of length 2 allows the monotonicity assumption to vary by
 treatment status with the first entry being for control and the
 second for treated.}
 
-\item{outcome_mono}{A integer or vector of length 2 indicating
-if the bounds should assume monotonicity of the effect of the
-post-test on the outcome with \code{1} indicating that the post-test
-effect is positive and \code{-1} indicating that it is negative. The
-vector of length 2 allows the monotonicity assumption to vary by
-treatment status with the first entry being for control and the
-second for treated.}
+\item{outcome_mono}{A integer or vector of length 2 indicating if the bounds
+should assume monotonicity of the effect of the post-test on the outcome
+with \code{1} indicating that the post-test effect is positive and \code{-1}
+indicating that it is negative. The vector of length 2 allows the
+monotonicity assumption to vary by treatment status with the first entry
+being for control and the second for treated.}
 
 \item{stable_mod}{A logical value indicating if the bounds should
 assume that the moderator is unaffected by pre-vs-post measurement
 under the control condition.}
 
-\item{c_se}{A numeric vector of positive values that allow for the
-bounds to be estimated under a relaxation of \code{c_se[i]} standard
-errors of the population constraints. Bounds are returned for the
-smallest value of \code{c_se} where bounds are feasible. By default,
-this is set to a grid of \code{seq(0, 3, 0.1)}.}
+\item{tau}{A numeric indicating how close the the moment conditions of the
+estimated bounds have to be from the minimum values in the sample. This
+allows us to obtain bounds and confidence intevals even when the
+assumptions are slightly violated due to sampling.}
 
 \item{progress}{A logical indicating if progress bars should be
 displayed. Defaults to TRUE.}

@@ -9,6 +9,7 @@ post_bounds(
   data,
   moderator,
   sims = 1000,
+  m = NULL,
   conf_level = 0.95,
   moderator_mono = NULL,
   stable_mod = FALSE,

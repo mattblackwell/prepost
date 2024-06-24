@@ -4,7 +4,7 @@
 \alias{pre_bounds}
 \title{Run pre-treatment bounds.}
 \usage{
-pre_bounds(formula, data, moderator, conf_level = 0.95, priming_mono = 1L)
+pre_bounds(formula, data, moderator, conf_level = 0.95, outcome_mono = 1L)
 }
 \arguments{
 \item{formula}{A formula with syntax \code{y ~ t}, where \code{y} is the
@@ -18,7 +18,7 @@ is the (unquoted) name of the  moderator variable for the CATE.}
 \item{conf_level}{A numeric indicating the confidence level for the bootstrap
 confidence intervals.}
 
-\item{priming_mono}{A integer indicating the direction of the priming
+\item{outcome_mono}{A integer indicating the direction of the priming
 monotonicity assumption. The default value \code{1} indicates that asking the
 moderator question in the pre-test moves outcomes in a positive direction
 for all units. The value \code{-1} indicates it moves outcomes in a negative

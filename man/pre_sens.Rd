@@ -29,12 +29,6 @@ moderator.}
 
 \item{conf_level}{A numeric indicating the confidence level for the bootstrap
 confidence intervals.}
-
-\item{priming_mono}{A integer indicating the direction of the priming
-monotonicity assumption. The default value \code{1} indicates that asking the
-moderator question in the pre-test moves outcomes in a positive direction
-for all units. The value \code{-1} indicates it moves outcomes in a negative
-direction for all units.}
 }
 \value{
 A list object containing sensitivity output.
