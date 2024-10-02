@@ -12,3 +12,4 @@ docs
 .DS_Store
 .projectile
 R/_archive.R
+*_cache/

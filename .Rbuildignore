@@ -7,3 +7,4 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 R/_archive.R
+^\.github$
