@@ -12,7 +12,7 @@ ps_tzd_crosswalk[["010"]] <- c("s101", "s001", "s100", "s000")
 ps_tzd_crosswalk[["100"]] <- c("s110", "s010", "s100", "s000")
 ps_tzd_crosswalk[["000"]] <- c("s110", "s010", "s100", "s000")
 
-update.p <- function(tr, z, d, omega, g, possible.strata) {
+update_p <- function(tr, z, d, omega, g, possible.strata) {
 
   ## create a PO for D strata grid and subset to possible strata
   ## this will help us map PO strata to observed strata
@@ -63,7 +63,7 @@ update.p <- function(tr, z, d, omega, g, possible.strata) {
 ## Function to update strata proportions, omega ##
 ##################################################
 
-update.omega <- function(covars, psis) {
+update_omega <- function(covars, psis) {
   num <- covars %*% psis
   num_max <- apply(num, 1, max)
   den <- log(rowSums(exp(num - num_max))) + num_max
@@ -75,7 +75,7 @@ update.omega <- function(covars, psis) {
 
 ## strata should be a N x (J - 1) matrix of strata indicators with the
 ## omitted strata corresponding to the last column of current.psi
-update.psi <- function(strata, X, m0, P0, current.psi) {
+update_psi <- function(strata, X, m0, P0, current.psi) {
   N <- nrow(X)
   K <- ncol(X)
   J <- ncol(strata)
@@ -102,7 +102,7 @@ update.psi <- function(strata, X, m0, P0, current.psi) {
 }
 
 
-update.beta <- function(y, X, m0, P0, current.betas) {
+update_beta <- function(y, X, m0, P0, current.betas) {
 
   N <- nrow(X)
   K <- ncol(X)

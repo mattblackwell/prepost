@@ -6,7 +6,7 @@ Authors@R:
   c(person(given = "Matthew",
            family = "Blackwell",
            role = c("aut", "cre"),
-           email = "mblackwell@gov.harvard.edu"
+           email = "mblackwell@gmail.com"
            ),
     person(given = "Jacob",
            family = "Brown",
@@ -43,5 +43,5 @@ Depends:
     R (>= 2.10)
 VignetteBuilder: 
     knitr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

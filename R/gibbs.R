@@ -224,7 +224,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
     # current psis = multinomial coefficients
     # omegas = log strata proportions
 
-    omega <- update.omega(covars, psis)
+    omega <- update_omega(covars, psis)
 
     ## update strata probabilities, based on updated g and current omega's
     ## NOTE: x1 and x2 do not explicitly enter this function
@@ -234,7 +234,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
     ## matrix of the same size with columns corresponding to possible
     ## strata. Each row is the conditional posterior probability of
     ## each possible strata for that unit.
-    p <- update.p(tr, z, d, omega, g, possible.strata)
+    p <- update_p(tr, z, d, omega, g, possible.strata)
     ## p$s000 <- 1 - rowSums(p[, colnames(p) != "s000"])
 
     ## sometimes there are floating point errors that we should round
@@ -297,7 +297,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
       psis_P0[, , j] <- diag(priors$psi.precision, ncol(covars))
     }
 
-    psis <- update.psi(
+    psis <- update_psi(
       strata.mat, covars,
       m0 = array(0, dim = c(ncol(covars), ncol(strata.mat))),
       P0 = psis_P0,
@@ -334,7 +334,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
       X <- cbind(covars, tz.mat, strata.mat, strata.int.mat)
     }
 
-    betas <- update.beta(
+    betas <- update_beta(
       y, X,
       m0 = betas_m0,
       P0 = betas_P0,
@@ -639,7 +639,7 @@ prepost_gibbs_nocovar <- function(formula, data, prepost, moderator,
     if (predictive) {
       p <- psis
     } else {
-      p <- update.p(tr, z, d, omega, g, possible.strata)
+      p <- update_p(tr, z, d, omega, g, possible.strata)
     }
 
     ## p$s000 <- 1 - rowSums(p[, colnames(p) != "s000"])

@@ -122,7 +122,6 @@ compute_strata_probs <- function(Y, D, T, Z) {
 #' @importFrom stats pnorm sd optimize
 #' @export
 post_bounds <- function(formula, data, moderator, sims = 1000,
-                        m = NULL,
                         conf_level = 0.95,
                         moderator_mono = NULL, stable_mod = FALSE,
                         nondiff = FALSE, progress = TRUE) {
@@ -194,16 +193,6 @@ post_bounds <- function(formula, data, moderator, sims = 1000,
   d_L_vec <- (1 - sqrt(m / N)) * (out$lower - bounds$L)
   d_U_vec <- (1 - sqrt(m / N)) * (out$upper - bounds$U)
 
-  m_sample <- sample(seq_len(N), size = m)
-  Ym <- Y[m_sample]
-  Dm <- D[m_sample]
-  Tm <- T[m_sample]
-  Zm <- Z[m_sample]
-  p_m <- tapply(Ym, interaction(Tm, Zm, Dm, sep = ""), mean)
-  q_m <- tapply(Dm, interaction(Tm, Zm, sep = ""), mean)
-  bounds_m <- post_factory(p_m, q_m, moderator_mono, stable_mod)
-  lower_m <- unname(min(bounds_m$L, na.rm = TRUE))
-  upper_m <- unname(max(bounds_m$U, na.rm = TRUE))
   
   if (nondiff) {
     nd_out <- post_bounds_nondiff(p, q)
@@ -213,8 +202,6 @@ post_bounds <- function(formula, data, moderator, sims = 1000,
 
   boot_lo <- rep(NA, times = sims)
   boot_hi <- rep(NA, times = sims)
-  boot_lo_mod <- rep(NA, times = sims)
-  boot_hi_mod <- rep(NA, times = sims)
   empty_count <- 0
   if (progress) cat("Bootstrap running...\n")
   for (b in 1:sims) {
@@ -250,8 +237,6 @@ post_bounds <- function(formula, data, moderator, sims = 1000,
     ## bounds$U[is.nan(bounds$U)] <- 2
     boot_lo[b] <- min(bounds$L, na.rm = TRUE)
     boot_hi[b] <- max(bounds$U, na.rm = TRUE)
-    boot_lo_mod[b] <- min(bounds$L + d_L_vec, na.rm = TRUE)
-    boot_hi_mod[b] <- max(bounds$U + d_U_vec, na.rm = TRUE)
     if (nondiff) {
       nd_out <- post_bounds_nondiff(p, q)
       boot_hi[b] <- nd_out$lower
@@ -960,7 +945,6 @@ post_bounds_inference <- function(P, Q, P_star, Q_star,
 
   P_diff <- P_star - P
   Q_diff <- Q_star - Q
-  V_diff <- V_star - V
 
   ## deterministic constraints: sum to 1 in td_grid
   ## inequality contraints: gamma in t_grid, theta in td_grid  
@@ -1651,10 +1635,14 @@ find_endpoint <- function(out, obs, Y, D, T, Z, N, rho, theta,
 #'
 #' @inheritParams post_sens
 #' @param prepost A one-sided formula with syntax ~ z, where z is the indicator variable for whether the moderator was measured pre- or post-treatment. 
+#' @param g_at Vector specifying what values to set the \eqn{\gamma} parameter
+#'  to in the sensitivity analysis. Overrides \code{g_by}.
 #' @param t_by Numeric indicating the grid spacing for the
 #' \eqn{\theta} parameter that restricts what proportion of units have
 #' their outcomes affected by the pre vs post-measurement of the
 #' moderator.
+#' @param t_at Vector specifying what values to set the \eqn{\theta} parameter
+#'  to in the sensitivity analysis. Overrides \code{t_by}.
 #' @param outcome_mono A integer or vector of length 2 indicating
 #' if the bounds should assume monotonicity of the effect of the
 #' post-test on the outcome with `1` indicating that the post-test
@@ -1857,7 +1845,7 @@ prepost_sens <- function(formula, data, moderator, prepost,
     }
   }
 
-  out <- bind_cols(
+  out <- dplyr::bind_cols(
     expand.grid(gamma = rhos, theta = thetas),
     lower = c(sens_out$lower),
     upper = c(sens_out$upper),

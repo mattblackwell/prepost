@@ -37,10 +37,16 @@ is the (unquoted) name of the  moderator variable for the CATE.}
 \eqn{\gamma} parameter that places an upper bound on the proportion
 of units whose moderator is affected by treatment.}
 
+\item{g_at}{Vector specifying what values to set the \eqn{\gamma} parameter
+to in the sensitivity analysis. Overrides \code{g_by}.}
+
 \item{t_by}{Numeric indicating the grid spacing for the
 \eqn{\theta} parameter that restricts what proportion of units have
 their outcomes affected by the pre vs post-measurement of the
 moderator.}
+
+\item{t_at}{Vector specifying what values to set the \eqn{\theta} parameter
+to in the sensitivity analysis. Overrides \code{t_by}.}
 
 \item{sims}{An integer indicating the number of simulations for the
 bootstrap confidence intervals for the bounds.}
