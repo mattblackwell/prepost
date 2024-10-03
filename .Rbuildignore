@@ -8,3 +8,6 @@
 ^LICENSE\.md$
 R/_archive.R
 ^\.github$
+README.Rmd
+README.html
+_cache/

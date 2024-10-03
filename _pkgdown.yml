@@ -1,4 +1,6 @@
+title: prepost
 url: https://mattblackwell.github.io/prepost/
 template:
   bootstrap: 5
-
+  bootswatch: zephyr
+  
