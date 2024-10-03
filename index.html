@@ -18,7 +18,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">prepost</a>
 
@@ -33,12 +33,6 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/prepost.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/prepost-vignette.html">Overview</a></li>
-  </ul>
-</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -55,9 +49,60 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="prepost">prepost<a class="anchor" aria-label="anchor" href="#prepost"></a>
 </h1></div>
-<p>This package contains code and sample data to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in <em>Priming bias versus post-treatment bias in experimental designs</em>, Blackwell et al. (Forthcoming).</p>
-<p>Functions prefixed with <code>post_</code> should be used to analyze data from a <strong>post-test design</strong>: i.e., one where the moderator is measured post-treatment.</p>
-<p>Functions prefixed with <code>prepost_</code> should be used to analyze data from a <strong>random placement design</strong>, in which the moderator is randomly assigned to be measured before or after treatment.</p>
+<!-- badges: start -->
+
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p>This package contains code and sample data to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in <a href="https://arxiv.org/pdf/2306.01211" class="external-link">Blackwell et al (2024)</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Install developer version</span></span>
+<span><span class="co">## install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mattblackwell/DirectEffects"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h2>
+<p>Both the nonparametric and Bayesian estimators all have prefixes that indicate what type of experimental design being used.</p>
+<ul>
+<li>
+<code>pre_</code> functions can analyze data from a <strong>pre-test design</strong> where the moderator is measured pre-treatment.</li>
+<li>
+<code>post_</code> functions can analyze data from a <strong>post-test design</strong> where the moderator is measured post-treatment.</li>
+<li>
+<code>prepost_</code> functions can analyze data from a <strong>random placement design</strong>, in which the moderator is randomly assigned to be measured before or after treatment.</li>
+</ul>
+<p>Most functions can be specified with a formula to identify the outcome and treatment and another one-sided formula for the moderator:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mattblackwell/prepost" class="external-link">prepost</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">delponte</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pre_bounds.html">pre_bounds</a></span><span class="op">(</span></span>
+<span>  formula <span class="op">=</span> <span class="va">angry_bin</span> <span class="op">~</span> <span class="va">t_commonality</span>,</span>
+<span>   data <span class="op">=</span> <span class="va">delponte</span>,</span>
+<span>  moderator <span class="op">=</span> <span class="op">~</span> <span class="va">itaid_bin</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">out</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">## $lower</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="do">##            </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="do">## -0.5923203 </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="do">## $upper</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="do">##           </span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="do">## 0.3221525 </span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="do">## $ci_lower</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="do">## [1] -0.6875343</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="do">## $ci_upper</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="do">## [1] 0.4035053</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="do">## $pre_est</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="do">## [1] -0.2701678</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
@@ -91,7 +136,12 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/mattblackwell/prepost/actions" class="external-link"><img src="https://github.com/mattblackwell/prepost/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

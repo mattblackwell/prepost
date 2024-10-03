@@ -2,9 +2,8 @@ pandoc: 3.1.11
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
-  prepost-vignette: prepost-vignette.html
   prepost: prepost.html
-last_built: 2024-10-03T18:23Z
+last_built: 2024-10-03T19:28Z
 urls:
   reference: https://mattblackwell.github.io/prepost/reference
   article: https://mattblackwell.github.io/prepost/articles
