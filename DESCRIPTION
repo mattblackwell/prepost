@@ -16,11 +16,21 @@ Authors@R:
     person(given = "Sophie",
            family = "Hill",
            role = c("aut"),
-           email = "sophie_hill@g.harvard.edu")
+           email = "sophie_hill@g.harvard.edu"
+           ),
+    person(given = "Kosuke",
+           family = "Imai",
+           role = c("aut"),
+           email = "imai@harvard.edu"
+           ),
+    person(given = "Teppei",
+           family = "Yamamoto",
+           role = c("aut"),
+           email = "tyamam@waseda.jp")
            )
 URL: https://github.com/mattblackwell/prepost,
     https://mattblackwell.github.io/prepost/
-Description: A set of tools to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in "Priming bias versus post-treatment bias in experimental designs", Blackwell et al. (Forthcoming).
+Description: A set of tools to implement the non-parametric bounds and Bayesian methods for assessing post-treatment bias developed in "Priming bias versus post-treatment bias in experimental designs", Blackwell et al.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
