@@ -18,7 +18,7 @@ bias developed in [Blackwell et al
 ``` r
 ## Install developer version
 ## install.packages("devtools")
-devtools::install_github("mattblackwell/DirectEffects", build_vignettes = TRUE)
+devtools::install_github("mattblackwell/prepost", build_vignettes = TRUE)
 ```
 
 ## Usage
