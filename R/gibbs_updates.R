@@ -89,7 +89,7 @@ update_psi <- function(strata, X, m0, P0, current.psi) {
     denom.j <- max.Xb + log(rowSums(exp(Xb.notj - max.Xb)))
     eta.j <- X %*% psi[, j] - denom.j
 
-    w <- rpg.devroye(N, n, eta.j)
+    w <- BayesLogit::rpg.devroye.R(N, n, eta.j)
     P.like.j <- crossprod(X, X * w)
     b.like.j <- crossprod(X,  kappa[, j] + denom.j * w)
 
@@ -110,7 +110,7 @@ update_beta <- function(y, X, m0, P0, current.betas) {
 
   betas <- current.betas
   Xb <- as.numeric(X %*% betas)
-  w <- BayesLogit::rpg.devroye(N, n, Xb)
+  w <- BayesLogit::rpg.devroye.R(N, n, Xb)
 
   P.like <- crossprod(X, X * w)
   P.post <- P.like + P0
