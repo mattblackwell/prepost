@@ -33,8 +33,15 @@
 
 #'
 #' @examples
-#' x <- "alfa,bravo,charlie,delta"
-
+#' data(land_experiment)
+#' prepost_gibbs(
+#'   support ~ treat_comb,
+#'   data = land_experiment,
+#'   moderator = ~ land_insecure,
+#'   prepost = ~ prepost,
+#'   covariates = ~ educ + age,
+#'   iter = 50
+#' )
 #' @importFrom progress progress_bar
 #' @importFrom gtools rdirichlet
 #' @importFrom BayesLogit rpg.devroye
@@ -217,7 +224,7 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
       ## this side steps the need to calculate different g vectors
       ## for each t/z combo and then select them.
       this_mu <- get.mu(
-        s, tr, z, covars, betas, possible.strata, type = "g")
+        s, tr, z, covars, betas, possible.strata, type = "g", tr.name = tr.name, z.name = z.name)
       g[[s]] <- plogis(this_mu, log.p = TRUE) * y +
         plogis(this_mu, log.p = TRUE, lower.tail = FALSE) * (1 - y)
     }
@@ -347,8 +354,8 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
     ## calculate "delta" for each iteration and store in output
     ## let's draw values of y11 and y01 for each observation based on the current betas
     ## but if the t and z values match for that observation, then we replace with the observed value y instead
-    pred_y11 <- get.mu(strata, 1, 1, covars, betas, possible.strata)
-    pred_y01 <- get.mu(strata, 0, 1, covars, betas, possible.strata)
+    pred_y11 <- get.mu(strata, 1, 1, covars, betas, possible.strata, tr.name = tr.name, z.name = z.name)
+    pred_y01 <- get.mu(strata, 0, 1, covars, betas, possible.strata, tr.name = tr.name, z.name = z.name)
     draw_y11 <- rbinom(N, 1, pred_y11)
     draw_y01 <- rbinom(N, 1, pred_y01)
 
@@ -394,8 +401,8 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
     names(mu.11) <- possible.strata
     names(mu.01) <- possible.strata
     for (s in possible.strata) {
-      mu.11[[s]] <- get.mu(s, 1, 1, covars, betas, possible.strata)
-      mu.01[[s]] <- get.mu(s, 0, 1, covars, betas, possible.strata)
+      mu.11[[s]] <- get.mu(s, 1, 1, covars, betas, possible.strata, tr.name = tr.name, z.name = z.name)
+      mu.01[[s]] <- get.mu(s, 0, 1, covars, betas, possible.strata, tr.name = tr.name, z.name = z.name)
     }
 
     ## compute the relative strata probabilities
@@ -454,8 +461,14 @@ prepost_gibbs <- function(formula, data, prepost, moderator, covariates,
 
 #'
 #' @examples
-#' x <- "alfa,bravo,charlie,delta"
-
+#' data(land_experiment)
+#' prepost_gibbs_nocovar(
+#'   support ~ treat_comb,
+#'   data = land_experiment,
+#'   moderator = ~ land_insecure,
+#'   prepost = ~ prepost,
+#'   iter = 50
+#' )
 #' @importFrom progress progress_bar
 #' @importFrom gtools rdirichlet
 #' @importFrom BayesLogit rpg.devroye
@@ -829,38 +842,40 @@ prepost_gibbs_nocovar <- function(formula, data, prepost, moderator,
 ## Get predicted probability, mu ----
 
 
-get.mu <- function(strata, t, z, covars, current.betas, possible.strata, type = "mu") {
+get.mu <- function(strata, t, z, covars, current.betas, possible.strata, type = "mu",
+                   tr.name, z.name) {
 
   ## if given length 1 for any variable, make it compatible
   if (length(t) == 1) t <- rep(t, nrow(covars))
   if (length(z) == 1) z <- rep(z, nrow(covars))
   if (length(strata) == 1) strata <- rep(strata, nrow(covars))
 
-  ## create strata indicator matrix
+  ## create strata indicator ma trix
   used.strata <- possible.strata[possible.strata != "s000"]
   st.mat <- create.indicators(strata, used.strata)
 
   ## creat tz matrix
   tz.mat <- cbind(t = t, z = z, "t:z" = t * z)
-
+  colnames(tz.mat) <- c(tr.name, z.name, paste0(tr.name, ":", z.name)) 
   ## create t * strata matrix
   st.int.mat <- t * st.mat
-  colnames(st.int.mat) <- paste0(colnames(st.mat), "*t")
+  colnames(st.int.mat) <- paste0(colnames(st.mat), "*", tr.name)
 
-  if('z:s111'%in%names(current.betas)){
+  if (paste0(z.name, ":s111") %in% names(current.betas)) {
     ## create z * strata matrix
     st.int.mat.z <- z * st.mat
-    colnames(st.int.mat.z) <- paste0(colnames(st.mat), "*z")
+    colnames(st.int.mat.z) <- paste0(colnames(st.mat), "*", z.name)
 
     ## create t * strata matrix
     st.int.mat.z.t <- t * z * st.mat
-    colnames(st.int.mat.z.t) <- paste0(colnames(st.mat), "*t*z")
+    colnames(st.int.mat.z.t) <- paste0(colnames(st.mat), "*", tr.name, "*", z.name)
 
 
   }
 
   ## combine into one design matrix
-  if ("z:s111" %in% names(current.betas) | "s111*t*z" %in% names(current.betas)) {
+  if (paste0(z.name, ":s111") %in% names(current.betas) |
+        paste0("s111", "*", tr.name, "*", z.name) %in% names(current.betas)) {
     des.mat <- cbind(
       covars, tz.mat, st.mat,
       st.int.mat, st.int.mat.z, st.int.mat.z.t

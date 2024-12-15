@@ -67,5 +67,13 @@ A list object containing Gibbs posterior quantities of interest and parameters.
 Run Gibbs sampler for the random moderator placement design
 }
 \examples{
-x <- "alfa,bravo,charlie,delta"
+data(land_experiment)
+prepost_gibbs(
+  support ~ treat_comb,
+  data = land_experiment,
+  moderator = ~ land_insecure,
+  prepost = ~ prepost,
+  covariates = ~ educ + age,
+  iter = 50
+)
 }

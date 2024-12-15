@@ -48,5 +48,12 @@ A list object containing Gibbs posterior quantities of interest and parameters.
 Run Gibbs sampler without covariates
 }
 \examples{
-x <- "alfa,bravo,charlie,delta"
+data(land_experiment)
+prepost_gibbs_nocovar(
+  support ~ treat_comb,
+  data = land_experiment,
+  moderator = ~ land_insecure,
+  prepost = ~ prepost,
+  iter = 50
+)
 }
