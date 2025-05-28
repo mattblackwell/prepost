@@ -91,27 +91,27 @@ prepost_bounds <- function(formula, data,  moderator,  prepost,
   out$deviation <- crit$criterion
 
   ## code to do CNS confidence intervals. Low coverage, but might revisit.
-  cns <- FALSE
-  if (cns) {
-    if (progress) cat("Finding upper CI via CNS...\n")
-    upper_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
-                              mm, stable_mod, sims, upper = TRUE,
-                              conf_level, tau, progress)  
-    if (progress) cat("Finding lower CI via CNS...\n")
-    lower_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
-                              mm, stable_mod, sims, upper = FALSE,
-                              conf_level, tau, progress)
-    if (max(lower_ci$p_values) > 1 - conf_level) {    
-      out$ci_lower_cns <- min(setdiff(lower_ci$point_list, lower_ci$reject_list))
-    } else {
-      out$ci_lower_cns <- out$lower
-    }
-    if (max(upper_ci$p_values) > 1 - conf_level) {
-      out$ci_upper_cns <- max(setdiff(upper_ci$point_list, upper_ci$reject_list))
-    } else {
-      out$ci_upper_cns <- out$upper
-    }
-  }
+  ## cns <- FALSE
+  ## if (cns) {
+  ##   if (progress) cat("Finding upper CI via CNS...\n")
+  ##   upper_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
+  ##                             mm, stable_mod, sims, upper = TRUE,
+  ##                             conf_level, tau, progress)  
+  ##   if (progress) cat("Finding lower CI via CNS...\n")
+  ##   lower_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
+  ##                             mm, stable_mod, sims, upper = FALSE,
+  ##                             conf_level, tau, progress)
+  ##   if (max(lower_ci$p_values) > 1 - conf_level) {    
+  ##     out$ci_lower_cns <- min(setdiff(lower_ci$point_list, lower_ci$reject_list))
+  ##   } else {
+  ##     out$ci_lower_cns <- out$lower
+  ##   }
+  ##   if (max(upper_ci$p_values) > 1 - conf_level) {
+  ##     out$ci_upper_cns <- max(setdiff(upper_ci$point_list, upper_ci$reject_list))
+  ##   } else {
+  ##     out$ci_upper_cns <- out$upper
+  ##   }
+  ## }
   
   boot_lo <- boot_hi <- ms_test <- rep(NA, sims)
   

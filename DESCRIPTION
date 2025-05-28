@@ -1,7 +1,7 @@
 Package: prepost
 Type: Package
 Title: Non-Parametric Bounds and Gibbs Sampler for Assessing Priming and Post-Treatment Bias
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
   c(person(given = "Matthew",
            family = "Blackwell",
