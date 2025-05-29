@@ -49,5 +49,3 @@ out <- pre_bounds(
 out
 ```
 
-## Citation
-
