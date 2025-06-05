@@ -89,29 +89,6 @@ prepost_bounds <- function(formula, data,  moderator,  prepost,
   out$solution_L <- bounds$solution_L
   out$solution_U <- bounds$solution_U
   out$deviation <- crit$criterion
-
-  ## code to do CNS confidence intervals. Low coverage, but might revisit.
-  ## cns <- FALSE
-  ## if (cns) {
-  ##   if (progress) cat("Finding upper CI via CNS...\n")
-  ##   upper_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
-  ##                             mm, stable_mod, sims, upper = TRUE,
-  ##                             conf_level, tau, progress)  
-  ##   if (progress) cat("Finding lower CI via CNS...\n")
-  ##   lower_ci <- find_endpoint(out, obs, Y, D, T, Z, N, rho = 1, theta = 1, om,
-  ##                             mm, stable_mod, sims, upper = FALSE,
-  ##                             conf_level, tau, progress)
-  ##   if (max(lower_ci$p_values) > 1 - conf_level) {    
-  ##     out$ci_lower_cns <- min(setdiff(lower_ci$point_list, lower_ci$reject_list))
-  ##   } else {
-  ##     out$ci_lower_cns <- out$lower
-  ##   }
-  ##   if (max(upper_ci$p_values) > 1 - conf_level) {
-  ##     out$ci_upper_cns <- max(setdiff(upper_ci$point_list, upper_ci$reject_list))
-  ##   } else {
-  ##     out$ci_upper_cns <- out$upper
-  ##   }
-  ## }
   
   boot_lo <- boot_hi <- ms_test <- rep(NA, sims)
   
@@ -320,32 +297,6 @@ prepost_sens <- function(formula, data, moderator, prepost,
       sens_out$lower[r, tt] <- out$lower
       sens_out$upper[r, tt] <- out$upper
       sens_out$criterion[r, tt] <- crit$criterion
-      cns <- FALSE
-      if (cns) {
-        if (progress) cat("Finding upper CI via CNS...\n")
-        upper_ci <- find_endpoint(
-          out, obs, Y, D, T, Z, N, rhos[r],  thetas[tt],
-          outcome_mono,
-          moderator_mono, stable_mod, sims, upper = TRUE,
-          conf_level, tau, progress)
-      if (progress) cat("Finding lower CI via CNS...\n")
-        lower_ci <- find_endpoint(
-          out, obs, Y, D, T, Z, N, rhos[r],  thetas[tt],
-          outcome_mono,
-          moderator_mono, stable_mod, sims, upper = FALSE,
-          conf_level, tau, progress)
-        if (max(lower_ci$p_values) > 1 - conf_level) {
-          sens_out$ci_lower[r, tt] <- min(setdiff(lower_ci$point_list, lower_ci$reject_list))
-        } else {
-          sens_out$ci_lower[r, tt] <- out$lower
-        }
-        if (max(upper_ci$p_values) > 1 - conf_level) {
-          sens_out$ci_upper[r, tt] <- max(setdiff(upper_ci$point_list, upper_ci$reject_list))
-        } else {
-          sens_out$ci_upper[r, tt] <- out$upper
-        }
-
-      }
       
 
     }
