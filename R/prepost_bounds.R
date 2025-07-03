@@ -95,7 +95,7 @@ prepost_bounds <- function(formula, data,  moderator,  prepost,
   if (progress) cat("Bootstrap running...\n")
   empty_count <- 0
   for (b in 1:sims) {
-    if ((100 * b / sims) %% 10 == 0 & progress) {
+    if (progress & ((100 * b / sims) %% 10 == 0)) {
       pb <-  c(rep("==", times = (10 * b / sims)),
                rep("  ", times = 10 - (10 * b / sims)))
       pb <- paste0(c("0% |", pb, "| 100%\n"), collapse = "")
@@ -302,11 +302,10 @@ prepost_sens <- function(formula, data, moderator, prepost,
     }
   }
   
-  ## ms_test <- array(NA, c(sims, length(sens_out$rho), length(sens_out$theta)))
   sens_lo <- array(NA, c(sims, length(sens_out$rho), length(sens_out$theta)))
   sens_hi <- array(NA, c(sims, length(sens_out$rho), length(sens_out$theta)))
   for (b in 1:sims) {
-    if ((100 * b / sims) %% 10 == 0 & progress) {
+    if (progress & ((100 * b / sims) %% 10 == 0)) {
       pb <-  c(rep("==", times = (10 * b / sims)),
                rep("  ", times = 10 - (10 * b / sims)))
       pb <- paste0(c("0% |", pb, "| 100%\n"), collapse = "")

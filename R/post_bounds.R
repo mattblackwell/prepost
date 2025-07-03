@@ -119,7 +119,7 @@ post_bounds <- function(formula, data, moderator, sims = 1000,
   empty_count <- 0
   if (progress) cat("Bootstrap running...\n")
   for (b in 1:sims) {
-    if ((100 * b / sims) %% 10 == 0 & progress) {
+    if (progress & ((100 * b / sims) %% 10 == 0)) {
       pb <-  c(rep("==", times = (10 * b / sims)),
                rep("  ", times = 10 - (10 * b / sims)))
       pb <- paste0(c("0% |", pb, "| 100%\n"), collapse = "")
@@ -465,7 +465,7 @@ post_sens <- function(formula, data,  moderator,
   
   sens_lo <- sens_hi <- array(NA, c(sims, length(sens_out$gamma)))
   for (b in 1:sims) {
-    if ((100 * b / sims) %% 10 == 0 & progress) {
+    if (progress & ((100 * b / sims) %% 10 == 0)) {
       pb <-  c(rep("==", times = (10 * b / sims)),
                rep("  ", times = 10 - (10 * b / sims)))
       pb <- paste0(c("0% |", pb, "| 100%\n"), collapse = "")
